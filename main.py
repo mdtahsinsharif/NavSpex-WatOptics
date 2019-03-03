@@ -9,7 +9,7 @@ def func1():
     threadlock.acquire()
     print('Working1')
     threadlock.release()
-    
+    ##working
 print(os.getcwd())
 threadlock = threading.Lock()
 threads = []
