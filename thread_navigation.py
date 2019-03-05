@@ -107,18 +107,3 @@ def thread_navigate(shared_val,lock, tIds, num_steps):
                 start_prog = True
         
         keepRunning += 1
-
-
-    # t = 0
-    # while True:
-    #     if(t>10):
-            
-    #         time.sleep(1)
-    #         if shared_val.value == 0:
-    #             with lock:
-    #                 print("[thread_navigation]Setting val.value")
-    #             shared_val.value = 1
-    #     with lock:
-    #         print("[thread_navigation]running:")
-    #     time.sleep(1)
-    #     t = t+1
