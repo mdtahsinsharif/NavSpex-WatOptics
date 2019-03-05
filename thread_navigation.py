@@ -13,7 +13,7 @@ def GetCameraInput(lock):
                camera_return = bsv.scan_barcode()
         return camera_return
 
-def thread_navigate(shared_val,lock, tIds, num_steps):
+def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
     rerun_astar = False
     keepRunning = 0
     start_prog = False
@@ -49,7 +49,7 @@ def thread_navigate(shared_val,lock, tIds, num_steps):
         if rerun_astar == False:
             '''# ------ Insert Code here ----- #'''
             ui.SpeakCommand("Please enter destination room")
-            e = "4016"
+            e = "4007"
             ui.SpeakCommand("Confirm destination: " + e)
             '''# ------ End here ----- #'''
 
@@ -61,15 +61,17 @@ def thread_navigate(shared_val,lock, tIds, num_steps):
         coordinates, _, _ = pf.FindPath(tIds, start, end)
         instructions = pf.GetInstructions(coordinates, d.mapScale*d.strideMen)
         rerun_astar = False ## got new path, astar = false
-        
+        direction = True
+        required_direction = 0
+        imu_direction.value = 0
         for inst in instructions:
                 ## send instruction
                 command = ui.GenerateWalkCommand(inst)
+                print(command)
                 ui.SpeakCommand(command)
-                true_direction = inst[0]
+                required_direction = inst[0]
                 required_steps = inst[1]
 
-                direction = True
                 num_steps.value = 0
                 while direction == True and num_steps.value < required_steps:
                         ##  Count Steps, Check direction
@@ -77,9 +79,18 @@ def thread_navigate(shared_val,lock, tIds, num_steps):
                         # steps_counter = num_steps
                         print("[thread_navigation]: steps required: ", required_steps)
                         print("[thread_navigation]: steps taken:", num_steps.value)
-                        time.sleep(0.2)
+                        time.sleep(0.3)
                         ## Direction = true if moving in the true_direction
-                        direction = True
+                        print("[thread_navigation]: required_direction: ", required_direction)
+                        print("[thread_navigation]: imu_direction: ", imu_direction.value)
+                        if required_direction == imu_direction.value:
+                                direction = True
+                                imu_direction.value = 0
+                                required_direction = 0
+                        else:
+                                ui.SpeakCommand("You turned the wrong direction! Rerouting.")
+                                direction = False
+                                
                         '''# ------ End here ----- #'''
 
                 ## Turned the wrong way?
@@ -91,6 +102,7 @@ def thread_navigate(shared_val,lock, tIds, num_steps):
         
         if rerun_astar == True:
                 ## ignore the rest of the loop and start over
+                keepRunning += 1
                 continue
 
         ## Start camera
@@ -98,10 +110,11 @@ def thread_navigate(shared_val,lock, tIds, num_steps):
         ## start camera and detect whether destination reached
         
         camera_input = GetCameraInput(lock)
+        # camera_input = camera_return
         if camera_input == camera_return:
                 ui.SpeakCommand("Destination is infront of you.")
                 start_prog = False
-        '''# ------ End here ----- #'''
+        ##'''# ------ End here ----- #'''
         else:
                 rerun_astar = True
                 start_prog = True
