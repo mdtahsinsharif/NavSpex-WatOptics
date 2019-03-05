@@ -2,19 +2,27 @@ import sys
 import os
 import time
 
-import Software.BarcodeScanner.barcode_scanner_video as bsv
+import Software.WatOptics_firmware.hardware_testing.barcode_scanner.barcode_scanner_video as bsv
 import Software.RouteFinding.UserInterfacing.ui_module as ui
 import Software.RouteFinding.PathFinding.pf_module as pf
 import Software.RouteFinding.Data.e5_4f as d ## this needs to be done based on input
 
+def GetCameraInput(lock):
+        ui.SpeakCommand("Determining! current! location, please! stay! steady!")
+        with lock:
+               camera_return = bsv.scan_barcode()
+        return camera_return
 
-def thread_navigate(shared_val,lock, tIds):
+def thread_navigate(shared_val,lock, tIds, num_steps):
     rerun_astar = False
     keepRunning = 0
+    start_prog = False
+    ##camera_return = -1
     while keepRunning < 3:
         ## wait for button to start 
         '''# ------ Insert Code here ----- #'''
-
+        while start_prog == False:
+                start_prog = True ## button input here 
         '''# ------ End here ----- #'''
 
         
@@ -22,9 +30,14 @@ def thread_navigate(shared_val,lock, tIds):
         '''# ------ Insert Code here ----- #'''
         ## 1. Use camera to detect current location
         ## 2. Ask user to input the room
-        with lock:
-                camera_return = bsv.scan_barcode()
-        print("[thread_navigate] camera", camera_retval)
+        # ui.SpeakCommand("Determining! current! location, please! stay! steady!")
+        # with lock:
+        #        camera_return = bsv.scan_barcode()
+        # camera_return = "-1"
+        
+        camera_return = GetCameraInput(lock)
+        
+        print("[thread_navigate] camera", camera_return)
 
         if camera_return != "-1":
                 s = camera_return
@@ -33,10 +46,10 @@ def thread_navigate(shared_val,lock, tIds):
         '''# ------ End here ----- #'''
 
         ## Get destination
-        if rerun_aster == False:
+        if rerun_astar == False:
             '''# ------ Insert Code here ----- #'''
             ui.SpeakCommand("Please enter destination room")
-            e = "4117"
+            e = "4016"
             ui.SpeakCommand("Confirm destination: " + e)
             '''# ------ End here ----- #'''
 
@@ -54,15 +67,17 @@ def thread_navigate(shared_val,lock, tIds):
                 command = ui.GenerateWalkCommand(inst)
                 ui.SpeakCommand(command)
                 true_direction = inst[0]
-                num_steps = inst[1]
+                required_steps = inst[1]
 
                 direction = True
-                steps_counter = 0
-                while direction == True and steps_counter < num_steps:
+                num_steps.value = 0
+                while direction == True and num_steps.value < required_steps:
                         ##  Count Steps, Check direction
                         '''# ------ Insert Code here ----- #'''
-                        steps_counter = num_steps
-
+                        # steps_counter = num_steps
+                        print("[thread_navigation]: steps required: ", required_steps)
+                        print("[thread_navigation]: steps taken:", num_steps.value)
+                        time.sleep(0.2)
                         ## Direction = true if moving in the true_direction
                         direction = True
                         '''# ------ End here ----- #'''
@@ -71,6 +86,7 @@ def thread_navigate(shared_val,lock, tIds):
                 if direction == False:
                         ## they changed direction, rerun A*
                         rerun_astar = True
+                        start_prog = True
                         break
         
         if rerun_astar == True:
@@ -80,11 +96,15 @@ def thread_navigate(shared_val,lock, tIds):
         ## Start camera
         '''# ------ Insert Code here ----- #'''
         ## start camera and detect whether destination reached
-        reached_destination = True
+        
+        camera_input = GetCameraInput(lock)
+        if camera_input == camera_return:
+                ui.SpeakCommand("Destination is infront of you.")
+                start_prog = False
         '''# ------ End here ----- #'''
-
-        if reached_destination == False:
+        else:
                 rerun_astar = True
+                start_prog = True
         
         keepRunning += 1
 
