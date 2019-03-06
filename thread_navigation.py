@@ -1,11 +1,78 @@
 import sys
 import os
 import time
+import RPi.GPIO as GPIO
 
 import Software.WatOptics_firmware.hardware_testing.barcode_scanner.barcode_scanner_video as bsv
 import Software.RouteFinding.UserInterfacing.ui_module as ui
 import Software.RouteFinding.PathFinding.pf_module as pf
 import Software.RouteFinding.Data.e5_4f as d ## this needs to be done based on input
+
+GPIO.setwarnings(False) # Ignore warning for now
+GPIO.setmode(GPIO.BOARD) # Use physical pin numbering
+GPIO.setup(16, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 16 to be an input pin and set initial value to be pulled low (off)
+GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 18 to be an input pin and set initial value to be pulled low (off)
+GPIO.setup(22, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 22 to be an input pin and set initial value to be pulled low (off)
+GPIO.setup(24, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 24 to be an input pin and set initial value to be pulled low (off)
+
+
+def getRoomNumber():
+    thousands = 4
+    hundreds = 0
+    tens = 0
+    ones = 0
+
+
+    while True: # Run forever
+        if GPIO.input(16) == GPIO.HIGH:
+            
+            #roomNumber = 4008
+        
+            hundreds += 1
+            if (hundreds > 9):
+                hundreds = 0
+            ui.SpeakCommand(str(hundreds))
+            time.sleep(0.3)
+            
+        if GPIO.input(18) == GPIO.HIGH:
+            
+            #roomNumber = 4037
+            
+            tens += 1
+            if (tens > 9):
+                tens = 0
+            ui.SpeakCommand(str(tens))
+            time.sleep(0.3)
+            
+        if GPIO.input(22) == GPIO.HIGH:
+            
+            #roomNumber = 4032
+            
+            ones += 1
+            if (ones > 9):
+                ones = 0
+            ui.SpeakCommand(str(ones))
+            time.sleep(0.3)
+        
+        if GPIO.input(24) == GPIO.HIGH:
+        
+            #roomNumber = 4118
+        
+            print("EXIT BUTTON")
+            break
+            
+    roomNumber = (thousands * 1000) + (hundreds * 100) + (tens * 10) + ones
+
+    thousand_s = str(thousands) + ' '
+    hundred_s = str(hundreds) + ' '
+    ten_s = str(tens) + ' '
+    one_s = str(ones) + ' '
+
+    roomNumber_s = thousand_s + hundred_s + ten_s + one_s
+
+    ui.SpeakCommand("Confirm destination: " + roomNumber_s)
+    print(roomNumber)
+    return str(roomNumber)
 
 def GetCameraInput(lock):
         ui.SpeakCommand("Determining! current! location, please! stay! steady!")
@@ -49,8 +116,8 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
         if rerun_astar == False:
             '''# ------ Insert Code here ----- #'''
             ui.SpeakCommand("Please enter destination room")
-            e = "4007"
-            ui.SpeakCommand("Confirm destination: " + e)
+            #e = "4007"
+            e = getRoomNumber()
             '''# ------ End here ----- #'''
 
         ## Map start and end to coordinates:
