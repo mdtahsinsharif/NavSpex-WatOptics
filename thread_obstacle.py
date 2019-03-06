@@ -5,8 +5,6 @@ import sys
 import os
 import subprocess
 import time
-import xlwt 
-from xlwt import Workbook 
 
 SONAR_THRESHOLD = 330
 
