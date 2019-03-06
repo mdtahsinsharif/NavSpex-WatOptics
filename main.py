@@ -21,10 +21,10 @@ if __name__ == "__main__":
     obstacle_value = Value('i',9999)
     lock = Lock()
     procs = []
-    #procs.append(Process(target=thread_navigation.thread_navigate, args=(v,lock, triangleIds, imu_counter, imu_direction, obstacle_detected)))
-    procs.append(Process(target=thread_obstacle.thread_obstacle_detection, args=(v,lock, obstacle_detected, obstacle_value)))
-    #procs.append(Process(target=imu_module.imu_step_counter, args=(imu_counter,imu_direction)))
-    procs.append(Process(target=sonar_thread.sonar_detect, args=(obstacle_value,)))
+    procs.append(Process(target=thread_navigation.thread_navigate, args=(v,lock, triangleIds, imu_counter, imu_direction, obstacle_detected)))
+    procs.append(Process(target=imu_module.imu_step_counter, args=(imu_counter,imu_direction)))
+	#procs.append(Process(target=thread_obstacle.thread_obstacle_detection, args=(v,lock, obstacle_detected, obstacle_value)))
+    procs.append(Process(target=sonar_thread.sonar_detect, args=(obstacle_value,obstacle_detected)))
 
     for p in procs: p.start()
     for p in procs: p.join()

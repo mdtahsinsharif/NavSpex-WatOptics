@@ -70,7 +70,7 @@ def getRoomNumber():
 
     roomNumber_s = thousand_s + hundred_s + ten_s + one_s
 
-    ui.SpeakCommand("Confirm destination: " + roomNumber_s)
+    ui.SpeakCommand("Confirm room number: " + roomNumber_s)
     print(roomNumber)
     return str(roomNumber)
 
@@ -88,8 +88,12 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
     while keepRunning < 3:
         ## wait for button to start 
         '''# ------ Insert Code here ----- #'''
+        ui.SpeakCommand("Please press any button to begin")
+        
         while start_prog == False:
-                start_prog = True ## button input here 
+        # might need to add delay here and in room input for SONAR
+            if GPIO.input(16) == GPIO.HIGH or GPIO.input(18) == GPIO.HIGH or GPIO.input(22) == GPIO.HIGH or GPIO.input(24) == GPIO.HIGH:
+                start_prog = True
         '''# ------ End here ----- #'''
 
         
@@ -100,16 +104,17 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
         # ui.SpeakCommand("Determining! current! location, please! stay! steady!")
         # with lock:
         #        camera_return = bsv.scan_barcode()
-        # camera_return = "-1"
+        camera_return = "-1"
         
-        camera_return = GetCameraInput(lock)
+        #camera_return = GetCameraInput(lock)
         
         print("[thread_navigate] camera", camera_return)
 
         if camera_return != "-1":
                 s = camera_return
         else:
-                s = "4020"
+                ui.SpeakCommand("Please enter current room")
+                s = getRoomNumber()
         '''# ------ End here ----- #'''
 
         ## Get destination
@@ -121,6 +126,7 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
             '''# ------ End here ----- #'''
 
         ## Map start and end to coordinates:
+        ## make sure room numbers are valid TODO
         start = d.rooms[s][0] ## returns a list, take first value
         end = d.rooms[e][0]
 
@@ -131,6 +137,7 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
         direction = True
         required_direction = 0
         imu_direction.value = 0
+        obs.value = 0
         for inst in instructions:
                 ## send instruction
                 command = ui.GenerateWalkCommand(inst)
@@ -144,6 +151,10 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
                         ##  Count Steps, Check direction
                         '''# ------ Insert Code here ----- #'''
                         # steps_counter = num_steps
+                        if obs.value:
+                            ui.SpeakCommand("Obstacle detected")
+                            obs.value = 0
+                            time.sleep(0.2)
                         print("[thread_navigation]: steps required: ", required_steps)
                         print("[thread_navigation]: steps taken:", num_steps.value)
                         time.sleep(0.3)
@@ -176,8 +187,8 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
         '''# ------ Insert Code here ----- #'''
         ## start camera and detect whether destination reached
         
-        camera_input = GetCameraInput(lock)
-        # camera_input = camera_return
+        #camera_input = GetCameraInput(lock)
+        camera_input = camera_return
         if camera_input == camera_return:
                 ui.SpeakCommand("Destination is infront of you.")
                 start_prog = False
