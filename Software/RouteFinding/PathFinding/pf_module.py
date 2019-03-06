@@ -286,11 +286,11 @@ def getTurn(p1, p2, p3):
     crossproduct = (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0])
 
     if crossproduct == 0:
-        return 'F'
+        return 0
     elif crossproduct > 0:
-        return 'R'
+        return 2
     else:
-        return 'L'
+        return 1
 
 def getNumSteps(p1, p2, sc):
     stepsx = m.ceil(abs(p1[0] - p2[0])/sc)
@@ -311,7 +311,7 @@ def GetInstructions(path, sc): ## sc = stride scale
         ## no path, already at destination
         return 
 
-    instructions.append(('F', getNumSteps(path[0], path[1], sc)))
+    instructions.append((0, getNumSteps(path[0], path[1], sc)))
 
     i = 1
     prevp = path[0]
