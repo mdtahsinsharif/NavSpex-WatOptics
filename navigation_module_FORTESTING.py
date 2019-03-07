@@ -26,7 +26,7 @@ def Nav_Thread(tIds):
         '''# ------ End here ----- #'''
 
         ## Get destination
-        if rerun_aster == False:
+        if rerun_astar == False:
             '''# ------ Insert Code here ----- #'''
             ui.SpeakCommand("Please enter destination room")
             e = "4117"
@@ -85,6 +85,6 @@ def Nav_Thread(tIds):
 
                     
 
-# if __name__ == "__main__":
-#     tIds = Load_Data("Data/e5_4f_nolabel.jpg")
-#     Nav_Thread(tIds)
+if __name__ == "__main__":
+    tIds = pp.LoadData("Software/RouteFinding/Data/e5_4f.jpg")
+    Nav_Thread(tIds)
