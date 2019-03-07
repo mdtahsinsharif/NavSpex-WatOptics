@@ -92,9 +92,8 @@ def GetButtonInput():
     return str(roomNumber)
 
 def GetCameraInput(lock):
-        ui.SpeakCommand("Determining! current! location, please! stay! steady!")
-        with lock:
-               camera_return = bsv.scan_barcode()
+        ui.SpeakCommand("Determining! location, please! stay! steady!")
+        camera_return = bsv.scan_barcode()
         return camera_return
 
 def IsValid(room):
@@ -144,7 +143,7 @@ def GetCurrentLocation(lock):
 
 def GetDestination():
     e = ValidateRoom(GetButtonInput())
-    return d.rooms[e][0]
+    return e, d.rooms[e][0]
 
  
 def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
@@ -172,7 +171,7 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
             '''# ------ Insert Code here ----- #'''
             ui.SpeakCommand("Please enter destination room")
             #e = "4007"
-            end = GetDestination()
+            e, end = GetDestination()
             '''# ------ End here ----- #'''
 
         ## Run A* 
@@ -240,12 +239,14 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
         
         camera_input = GetCameraInput(lock)
         #camera_input = camera_return
-        if camera_input == end:
+        print("destination camera: ", str(camera_input), "destination end ", str(end), "destination e ", str(e))
+        if str(camera_input) == str(e):
                 ui.SpeakCommand("Destination is infront of you.")
                 start_prog = False
         ##'''# ------ End here ----- #'''
         else:
                 rerun_astar = True
                 start_prog = True
+                ui.SpeakCommand("Incorrect Destination, rerouting")
         
         keepRunning += 1

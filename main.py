@@ -23,7 +23,7 @@ if __name__ == "__main__":
     procs = []
     procs.append(Process(target=thread_navigation.thread_navigate, args=(v,lock, triangleIds, imu_counter, imu_direction, obstacle_detected)))
     procs.append(Process(target=imu_module.imu_step_counter, args=(imu_counter,imu_direction)))
-    procs.append(Process(target=sonar_thread.sonar_detect, args=(obstacle_value,obstacle_detected)))
+    #procs.append(Process(target=sonar_thread.sonar_detect, args=(obstacle_value,obstacle_detected)))
 
     for p in procs: p.start()
     for p in procs: p.join()
