@@ -22,6 +22,33 @@ GPIO.setup(PIN_TEN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 18 to be an i
 GPIO.setup(PIN_ONE, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 22 to be an input pin and set initial value to be pulled low (off)
 GPIO.setup(PIN_DONE, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 24 to be an input pin and set initial value to be pulled low (off)
 
+def GetHardodedInput():
+    rooms = []
+    rooms.append(4007)
+    rooms.append(4006)
+    rooms.append(4003)
+    rooms.append(4002)
+    rooms.append(4001)
+    
+    index = -1
+    ui.SpeakCommand("Please press buttons to choose your destination")
+    while True:
+        if GPIO.input(PIN_THOUSAND) == GPIO.HIGH or GPIO.input(PIN_HUNDRED) == GPIO.HIGH or GPIO.input(PIN_TEN) == GPIO.HIGH or GPIO.input(PIN_ONE) == GPIO.HIGH:
+            index = index + 1
+            print("[thread_navigation] asking room: ", rooms[index])
+            ui.SpeakCommand(str(rooms[index]))
+            time.sleep(0.3)
+            
+            
+        if GPIO.input(PIN_DONE) == GPIO.HIGH:
+            if index < 0:
+                index = index+1
+            ui.SpeakCommand(" Room Selected, " + str(rooms[index]))
+            time.sleep(0.3)
+            break;
+    return str(rooms[index])
+        
+    
 
 def GetButtonInput():
     thousands = 0
@@ -113,7 +140,7 @@ def ValidateRoom(room):
                         ui.SpeakCommand("Invalid room " + str(s) + ", please enter different room")
                 else: 
                        ui.SpeakCommand("Invalid room " + str(s) + ", please reconfirm room and enter")
-                s = GetButtonInput()
+                s = GetHardodedInput()
                 valid_room = IsValid(s)
                 
                 counter += 1
@@ -126,9 +153,9 @@ def GetCurrentLocation(lock):
         # ui.SpeakCommand("Determining! current! location, please! stay! steady!")
         # with lock:
         #        camera_return = bsv.scan_barcode()
-        #camera_return = "-1"
+        camera_return = "-1" ########///////////////////my change Tahsin
         
-        camera_return = GetCameraInput(lock)
+        #camera_return = GetCameraInput(lock) ///////////////////////////////////mychange Tahsin
         
         print("[thread_navigate] camera", camera_return)
 
@@ -136,13 +163,13 @@ def GetCurrentLocation(lock):
                 s = camera_return
         else:
                 ui.SpeakCommand("Please enter current room")
-                s = ValidateRoom(GetButtonInput())
+                s = ValidateRoom(GetHardodedInput())
 
         roomNum = d.rooms[s][0]
         return roomNum
 
 def GetDestination():
-    e = ValidateRoom(GetButtonInput())
+    e = ValidateRoom(GetHardodedInput())
     return e, d.rooms[e][0]
 
  
@@ -236,8 +263,8 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
         ## Start camera
         '''# ------ Insert Code here ----- #'''
         ## start camera and detect whether destination reached
-        
-        camera_input = GetCameraInput(lock)
+        camera_input = -1 ###//////////////////////////////////my change Tahsin
+        #camera_input = GetCameraInput(lock) #####////////////////// my change Tahsin
         #camera_input = camera_return
         print("destination camera: ", str(camera_input), "destination end ", str(end), "destination e ", str(e))
         if str(camera_input) == str(e):
