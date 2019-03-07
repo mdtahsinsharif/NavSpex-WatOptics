@@ -8,24 +8,30 @@ import Software.RouteFinding.UserInterfacing.ui_module as ui
 import Software.RouteFinding.PathFinding.pf_module as pf
 import Software.RouteFinding.Data.e5_4f as d ## this needs to be done based on input
 
+PIN_THOUSAND = 12
+PIN_HUNDRED = 16
+PIN_TEN = 18
+PIN_ONE = 22
+PIN_DONE = 24
+
 GPIO.setwarnings(False) # Ignore warning for now
 GPIO.setmode(GPIO.BOARD) # Use physical pin numbering
-GPIO.setup(14, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 14 to be an input pin and set initial value to be pulled low (off)
-GPIO.setup(16, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 16 to be an input pin and set initial value to be pulled low (off)
-GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 18 to be an input pin and set initial value to be pulled low (off)
-GPIO.setup(22, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 22 to be an input pin and set initial value to be pulled low (off)
-GPIO.setup(24, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 24 to be an input pin and set initial value to be pulled low (off)
+GPIO.setup(PIN_THOUSAND, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 14 to be an input pin and set initial value to be pulled low (off)
+GPIO.setup(PIN_HUNDRED, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 16 to be an input pin and set initial value to be pulled low (off)
+GPIO.setup(PIN_TEN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 18 to be an input pin and set initial value to be pulled low (off)
+GPIO.setup(PIN_ONE, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 22 to be an input pin and set initial value to be pulled low (off)
+GPIO.setup(PIN_DONE, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 24 to be an input pin and set initial value to be pulled low (off)
 
 
 def GetButtonInput():
-    thousands = 4
+    thousands = 0
     hundreds = 0
     tens = 0
     ones = 0
 
 
     while True: # Run forever
-        if GPIO.input(14) == GPIO.HIGH:
+        if GPIO.input(PIN_THOUSAND) == GPIO.HIGH:
             
             #roomNumber = 4008
         
@@ -35,7 +41,7 @@ def GetButtonInput():
             ui.SpeakCommand(str(thousands))
             time.sleep(0.3)
             
-        if GPIO.input(16) == GPIO.HIGH:
+        if GPIO.input(PIN_HUNDRED) == GPIO.HIGH:
             
             #roomNumber = 4008
         
@@ -45,7 +51,7 @@ def GetButtonInput():
             ui.SpeakCommand(str(hundreds))
             time.sleep(0.3)
             
-        if GPIO.input(18) == GPIO.HIGH:
+        if GPIO.input(PIN_TEN) == GPIO.HIGH:
             
             #roomNumber = 4037
             
@@ -55,7 +61,7 @@ def GetButtonInput():
             ui.SpeakCommand(str(tens))
             time.sleep(0.3)
             
-        if GPIO.input(22) == GPIO.HIGH:
+        if GPIO.input(PIN_ONE) == GPIO.HIGH:
             
             #roomNumber = 4032
             
@@ -65,7 +71,7 @@ def GetButtonInput():
             ui.SpeakCommand(str(ones))
             time.sleep(0.3)
         
-        if GPIO.input(24) == GPIO.HIGH:
+        if GPIO.input(PIN_DONE) == GPIO.HIGH:
         
             #roomNumber = 4118
         
@@ -83,8 +89,7 @@ def GetButtonInput():
 
     ui.SpeakCommand("Received Room Number: " + roomNumber_s)
     print(roomNumber)
-    strRoom = ValidateRoom(str(roomNumber))
-    return strRoom
+    return str(roomNumber)
 
 def GetCameraInput(lock):
         ui.SpeakCommand("Determining! current! location, please! stay! steady!")
@@ -93,13 +98,13 @@ def GetCameraInput(lock):
         return camera_return
 
 def IsValid(room):
-        if room in d.rooms.keys:
+        if room in d.rooms.keys():
                 return True
         else:
                 return False
 
 def ValidateRoom(room):
-        s = room
+        s = str(room)
         valid_room = IsValid(s)
         counter = 1
         while not valid_room:
@@ -110,6 +115,8 @@ def ValidateRoom(room):
                 else: 
                        ui.SpeakCommand("Invalid room " + str(s) + ", please reconfirm room and enter")
                 s = GetButtonInput()
+                valid_room = IsValid(s)
+                
                 counter += 1
         return s
 
@@ -120,9 +127,9 @@ def GetCurrentLocation(lock):
         # ui.SpeakCommand("Determining! current! location, please! stay! steady!")
         # with lock:
         #        camera_return = bsv.scan_barcode()
-        camera_return = "-1"
+        #camera_return = "-1"
         
-        #camera_return = GetCameraInput(lock)
+        camera_return = GetCameraInput(lock)
         
         print("[thread_navigate] camera", camera_return)
 
@@ -130,10 +137,15 @@ def GetCurrentLocation(lock):
                 s = camera_return
         else:
                 ui.SpeakCommand("Please enter current room")
-                s = GetButtonInput()
+                s = ValidateRoom(GetButtonInput())
 
         roomNum = d.rooms[s][0]
         return roomNum
+
+def GetDestination():
+    e = ValidateRoom(GetButtonInput())
+    return d.rooms[e][0]
+
  
 def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
     rerun_astar = False
@@ -147,7 +159,7 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
         
         while start_prog == False:
         # might need to add delay here and in room input for SONAR
-            if GPIO.input(16) == GPIO.HIGH or GPIO.input(18) == GPIO.HIGH or GPIO.input(22) == GPIO.HIGH or GPIO.input(24) == GPIO.HIGH:
+            if GPIO.input(PIN_THOUSAND) == GPIO.HIGH or GPIO.input(PIN_HUNDRED) == GPIO.HIGH or GPIO.input(PIN_TEN) == GPIO.HIGH or GPIO.input(PIN_ONE) == GPIO.HIGH or GPIO.input(PIN_DONE) == GPIO.HIGH:
                 start_prog = True
         '''# ------ End here ----- #'''
 
@@ -160,14 +172,8 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
             '''# ------ Insert Code here ----- #'''
             ui.SpeakCommand("Please enter destination room")
             #e = "4007"
-            e = GetButtonInput()
+            end = GetDestination()
             '''# ------ End here ----- #'''
-
-        ## Map start and end to coordinates:
-        ## make sure room numbers are valid TODO
-
-        # start = d.rooms[s][0] ## returns a list, take first value
-        end = d.rooms[e][0]
 
         ## Run A* 
         coordinates, _, _ = pf.FindPath(tIds, start, end)
@@ -196,7 +202,8 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
                             time.sleep(0.2)
         
                         if repeat_command: 
-                                ui.SpeakCommand([required_direction, required_steps - num_steps])
+                                cmd = ui.GenerateWalkCommand([required_direction, (required_steps - num_steps.value)])
+                                ui.SpeakCommand(cmd)
                         print("[thread_navigation]: steps required: ", required_steps)
                         print("[thread_navigation]: steps taken:", num_steps.value)
                         time.sleep(0.3)
@@ -204,17 +211,17 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
                         print("[thread_navigation]: required_direction: ", required_direction)
                         print("[thread_navigation]: imu_direction: ", imu_direction.value)
                         if required_direction == imu_direction.value:
+                                time.sleep(1)
                                 direction = True
                                 imu_direction.value = 0
                                 required_direction = 0
-                        elif imu_direction.value == 0:
+                        elif required_direction != 0 and imu_direction.value == 0:
                                 repeat_command = True
                         else:
                                 ui.SpeakCommand("You turned the wrong direction! Rerouting.")
                                 direction = False
-                                
-                        '''# ------ End here ----- #'''
 
+                        '''# ------ End here ----- #'''
                 ## Turned the wrong way?
                 if direction == False:
                         ## they changed direction, rerun A*
@@ -231,9 +238,9 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
         '''# ------ Insert Code here ----- #'''
         ## start camera and detect whether destination reached
         
-        #camera_input = GetCameraInput(lock)
-        camera_input = camera_return
-        if camera_input == camera_return:
+        camera_input = GetCameraInput(lock)
+        #camera_input = camera_return
+        if camera_input == end:
                 ui.SpeakCommand("Destination is infront of you.")
                 start_prog = False
         ##'''# ------ End here ----- #'''
