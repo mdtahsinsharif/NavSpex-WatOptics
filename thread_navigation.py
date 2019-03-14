@@ -6,7 +6,7 @@ import RPi.GPIO as GPIO
 import Software.WatOptics_firmware.hardware_testing.barcode_scanner.barcode_scanner_video as bsv
 import Software.RouteFinding.UserInterfacing.ui_module as ui
 import Software.RouteFinding.PathFinding.pf_module as pf
-import Software.RouteFinding.Data.e5_4f as d ## this needs to be done based on input
+import Software.RouteFinding.Data.symposium_map as d ## this needs to be done based on input
 
 PIN_THOUSAND = 12
 PIN_HUNDRED = 16
@@ -182,27 +182,46 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
         required_direction = 0
         imu_direction.value = 0
         obs.value = 0
+
         for inst in instructions:
-                ## send instruction
-                command = ui.GenerateWalkCommand(inst)
-                print(command)
-                ui.SpeakCommand(command)
                 required_direction = inst[0]
                 required_steps = inst[1]
 
+                ## send instruction
+                if required_direction != 0: ## turn required
+                        command.ui.GenerateTurnCommand()
+                        print(command)
+                        ui.SpeakCommand(command)
+
+                        while required_direction != imu_direction.value:
+                                ## obs detect 
+                                if obs.value:
+                                        ui.SpeakCommand("Obstacle detected")
+                                        obs.value = 0
+                                        time.sleep(0.2)
+
+                                if GPIO.input(PIN_DONE) == GPIO.HIGH:
+                                        if imu_direction.value == 0: ## we missed the turn
+                                                required_direction = 0
+                                        else:
+                                                if imu_direction != required_direction:
+                                                        ui.SpeakCommand("Incorrect turn. Please turn opposite way and press done to confirm.")
+                                                else:
+                                                        imu_direction = 0
+                                                        required_direction = 0
+                        
+                command = ui.GenerateWalkCommand(inst)
+                print(command)
+                ui.SpeakCommand(command)
+
                 num_steps.value = 0
-                repeat_command = False
                 while direction == True and num_steps.value < required_steps:
                         ##  Count Steps, Check direction
-                        '''# ------ Insert Code here ----- #'''
                         if obs.value:
                             ui.SpeakCommand("Obstacle detected")
                             obs.value = 0
                             time.sleep(0.2)
-        
-                        if repeat_command: 
-                                cmd = ui.GenerateWalkCommand([required_direction, (required_steps - num_steps.value)])
-                                ui.SpeakCommand(cmd)
+
                         print("[thread_navigation]: steps required: ", required_steps)
                         print("[thread_navigation]: steps taken:", num_steps.value)
                         time.sleep(0.3)
@@ -214,11 +233,9 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
                                 direction = True
                                 imu_direction.value = 0
                                 required_direction = 0
-                        elif required_direction != 0 and imu_direction.value == 0:
-                                repeat_command = True
                         else:
-                                ui.SpeakCommand("You turned the wrong direction! Rerouting.")
-                                direction = False
+                                ui.SpeakCommand("You turned the wrong direction! Please turn back.")
+                                ## assume they turned back and continue
 
                         '''# ------ End here ----- #'''
                 ## Turned the wrong way?
