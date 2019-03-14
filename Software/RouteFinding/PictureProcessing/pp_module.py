@@ -1,10 +1,13 @@
 # import matplotlib.pyplot as plt ## for debugging CreateNavMesh
 import numpy as np
 import triangle as tr
+# import opencv_wrapper as cv_wpr
+# import polygon as nvs_p
 from Software.RouteFinding.PictureProcessing import opencv_wrapper as cv_wpr
 from Software.RouteFinding.PictureProcessing import polygon as nvs_p ## navspex polygon
 # import matplot_wrapper as plt_wpr
 import math as m
+import matplotlib.pyplot as plt
 
 '''
 Notes:
@@ -143,9 +146,9 @@ def LoadData(path):
     tIds = GetTriangles(tVertInd)
     return tIds
 
-## for debugging only
+# # for debugging only
 # if __name__ == "__main__":
-#         img, edged = ReadImage("../data/e5_4f_nolabel.jpg")
+#         img, edged = ReadImage("../Data/symposium_map.jpg")
 #         tVertInd = CreateNavMesh(edged)
 #         tIds = GetTriangles(tVertInd)
 #         # print(hard_edges)

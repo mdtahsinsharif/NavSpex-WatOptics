@@ -257,6 +257,32 @@ def Optimizer(tIds, path, start, dest):
 
     return optPath
 
+def Digitize(tIds, path, start, dest):
+    coords = []
+    coords.append(start)
+
+    del path[0]
+    del path[len(path)-1]
+
+    current = start
+    for i in range(len(path)):
+        t = tIds[path[i]].GetMidpoint()
+
+        grad, _, _ = gradient(current, t)
+
+        if i == 0 or grad != 1:
+            coords.append((t[0], current[1]))
+        elif grad: ## move y first
+            coords.append((current[0], t[1]))
+            
+
+        current = t
+        coords.append(current)
+    
+    coords.append((current[0], dest[1]))
+    coords.append(dest)
+    return coords
+
 def FindPath(tIds, current, dest):
     '''
     High level function
@@ -276,7 +302,8 @@ def FindPath(tIds, current, dest):
     dist: the total distance from current to dest using the above coordinates
     '''
     path, dist = FindPolygonsInPath(tIds, current, dest)
-    coordinates = Optimizer(tIds, path, current, dest)
+    coordinates = Digitize(tIds, path, current, dest)
+    # coordinates = Optimizer(tIds, path, current, dest)
     return coordinates, path, dist
 
 def getTurn(p1, p2, p3):
