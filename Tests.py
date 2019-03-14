@@ -23,11 +23,13 @@ def DebugPathFinding():
     coordinates, path, _ = pf.FindPath(tIds, start, end)
     instructions = pf.GetInstructions(coordinates, d.mapScale*d.strideMen)
 
+    print(path)
+
     imgLines = wo_cv2.DrawLines(coordinates, img.copy(), 3)
     imgFinal = wo_cv2.DrawCircles((start, end), imgLines, 3)
     wo_cv2.DisplayImage('Final image', imgFinal)    
     # wo_plt.DrawTriangles(tIds, path, 'hide')
-    # wo_plt.ScatterPoints(coordinates, 'purple')
+    # wo_plt.ScatterPoints(coordinates, 'yellow')
     # wo_plt.ShowPlot()
 
 DebugPathFinding()

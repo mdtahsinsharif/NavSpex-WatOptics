@@ -160,8 +160,8 @@ def getSegments(tIds, path, start, end):
     segments.append(1)
     direction_prev = []
     
-    prevp = tIds[path[1]].GetMidpoint()
-    currentp = tIds[path[2]].GetMidpoint()
+    prevp = tIds[path[0]].GetMidpoint()
+    currentp = tIds[path[1]].GetMidpoint()
 
     grad_prev = gradient(prevp, currentp)[0]
 
@@ -177,8 +177,8 @@ def getSegments(tIds, path, start, end):
         currentp = nextp
         grad_prev = grad_new
         i += 1
-    
-    segments.append(i) ## i = len(path) - 1 
+
+    segments.append(len(path)-1)
     direction_prev.append(grad_prev)
     # print("segments: ", segments)
     return segments, direction_prev
@@ -197,12 +197,13 @@ def Optimizer(tIds, path, start, dest):
     newpath.append(start)
     if len(path) <= 1: ## TODO: This should be 2, and we need to digitize
         # both the start and dest are in the same triangle
+        newpath.append(start[0], dest[1])
         newpath.append(dest)
         return newpath
 
+
     segments, direction = getSegments(tIds, path, start, dest)    
     # print(path)
-    # print(segments)
 
     avg_points = []
 
@@ -215,7 +216,6 @@ def Optimizer(tIds, path, start, dest):
 
         for id in segmented_path:
             point = tIds[id].GetMidpoint()
-            # print("p ", point)
             sum_x += point[0]
             sum_y += point[1]
 
@@ -237,13 +237,12 @@ def Optimizer(tIds, path, start, dest):
     for i in range(len(avg_points)):
         d = direction[i] ## dx <= dy ---> move in y? 
         point = avg_points[i]
-        # print("direction ", d)
         if d: ## moving in y
             optPath.append((int(point[0]), int(current[1])))
-            current = (point[0], current[1])
+            current = (int(point[0]), int(current[1]))
         else: ## moving in x 
             optPath.append((int(current[0]), int(point[1])))
-            current = (current[0], point[1])
+            current = (int(current[0]), int(point[1]))
 
     d = gradient(current, dest)[0]
 
@@ -253,35 +252,8 @@ def Optimizer(tIds, path, start, dest):
         optPath.append((int(dest[0]), int(current[1])))
     
     optPath.append(dest)
-    # print("optPath: ", optPath)
 
     return optPath
-
-def Digitize(tIds, path, start, dest):
-    coords = []
-    coords.append(start)
-
-    del path[0]
-    del path[len(path)-1]
-
-    current = start
-    for i in range(len(path)):
-        t = tIds[path[i]].GetMidpoint()
-
-        grad, _, _ = gradient(current, t)
-
-        if i == 0 or grad != 1:
-            coords.append((t[0], current[1]))
-        elif grad: ## move y first
-            coords.append((current[0], t[1]))
-            
-
-        current = t
-        coords.append(current)
-    
-    coords.append((current[0], dest[1]))
-    coords.append(dest)
-    return coords
 
 def FindPath(tIds, current, dest):
     '''
@@ -302,8 +274,7 @@ def FindPath(tIds, current, dest):
     dist: the total distance from current to dest using the above coordinates
     '''
     path, dist = FindPolygonsInPath(tIds, current, dest)
-    coordinates = Digitize(tIds, path, current, dest)
-    # coordinates = Optimizer(tIds, path, current, dest)
+    coordinates = Optimizer(tIds, path, current, dest)
     return coordinates, path, dist
 
 def getTurn(p1, p2, p3):
