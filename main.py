@@ -12,7 +12,7 @@ import Software.WatOptics_firmware.hardware_testing.IMU.wiringPi.LSM9DS1_Raspber
 import Software.WatOptics_firmware.hardware_testing.Sonar.rangeFind as sonar_thread
 
 if __name__ == "__main__":
-    triangleIds = pp.LoadData("Software/RouteFinding/Data/e5_4f.jpg")
+    triangleIds = pp.LoadData("Software/RouteFinding/Data/symposium_map.jpg")
 
     v = Value('i', 0)
     imu_counter = Value('i', 0)
