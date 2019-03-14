@@ -24,5 +24,8 @@ def GenerateWalkCommand(command):
     return cmd
 
 
-def SpeakCommand(command):
-    subprocess.call(["espeak", command, "2>/dev/null"])
+def SpeakCommand(command, debug = 0):
+    if debug:
+        print(command)
+    else:
+        subprocess.call(["espeak", command, "2>/dev/null"])

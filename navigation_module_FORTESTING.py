@@ -2,7 +2,9 @@ import Software.RouteFinding.PictureProcessing.pp_module as pp
 from Software.RouteFinding.PictureProcessing import opencv_wrapper as wcv2
 from Software.RouteFinding.PathFinding import pf_module as pf
 from Software.RouteFinding.UserInterfacing import ui_module as ui
-from Software.RouteFinding.Data import e5_4f as d ## TODO: Figure out how to change this based on user input
+from Software.RouteFinding.Data import symposium_map as d ## TODO: Figure out how to change this based on user input
+
+DEBUG = 1
 
 def Nav_Thread(tIds):
     rerun_astar = False
@@ -18,19 +20,19 @@ def Nav_Thread(tIds):
         '''# ------ Insert Code here ----- #'''
         ## 1. Use camera to detect current location
         ## 2. Ask user to input the room
-        camera_return = "4020"
+        camera_return = "Entrance"
         if camera_return != "-1":
                 s = camera_return
         else:
-                s = "4020"
+                s = "Entrance"
         '''# ------ End here ----- #'''
 
         ## Get destination
         if rerun_astar == False:
             '''# ------ Insert Code here ----- #'''
-            ui.SpeakCommand("Please enter destination room")
-            e = "4117"
-            ui.SpeakCommand("Confirm destination: " + e)
+            ui.SpeakCommand("Please enter destination room", DEBUG)
+            e = "Room2"
+            ui.SpeakCommand("Confirm destination: " + e, DEBUG)
             '''# ------ End here ----- #'''
 
         ## Map start and end to coordinates:
@@ -45,7 +47,7 @@ def Nav_Thread(tIds):
         for inst in instructions:
                 ## send instruction
                 command = ui.GenerateWalkCommand(inst)
-                ui.SpeakCommand(command)
+                ui.SpeakCommand(command, DEBUG)
                 true_direction = inst[0]
                 num_steps = inst[1]
 
@@ -86,5 +88,5 @@ def Nav_Thread(tIds):
                     
 
 if __name__ == "__main__":
-    tIds = pp.LoadData("Software/RouteFinding/Data/e5_4f.jpg")
+    tIds = pp.LoadData("Software/RouteFinding/Data/symposium_map.jpg")
     Nav_Thread(tIds)
