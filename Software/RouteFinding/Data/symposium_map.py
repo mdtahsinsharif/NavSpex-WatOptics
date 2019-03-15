@@ -4,10 +4,10 @@ strideMen = 0.7622 ## meters per male stride
 strideWomen = 0.671 ## meters per female stride
 
 rooms = {
-	"Entrance": [(420, 276)],
-	"Room1": [(125, 276)],
+	"4020": [(420, 276)],
+	# "Room1": [(125, 276)],
 	"Room2": [(349, 874)],
-	"Exit": [(741, 586)]
+	"4012": [(741, 586)]
 }
 
 ## contours list

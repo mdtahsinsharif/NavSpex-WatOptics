@@ -22,6 +22,28 @@ GPIO.setup(PIN_TEN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 18 to be an i
 GPIO.setup(PIN_ONE, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 22 to be an input pin and set initial value to be pulled low (off)
 GPIO.setup(PIN_DONE, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 24 to be an input pin and set initial value to be pulled low (off)
 
+def DemoButtonInput():
+    rooms = []
+    rooms.append(4012)
+    index = -1
+    ui.SpeakCommand("Press buttons to select your room and then, press done ")
+    while True:
+        if GPIO.input(PIN_THOUSAND) == GPIO.HIGH or GPIO.input(PIN_HUNDRED) == GPIO.HIGH or GPIO.input(PIN_TEN) == GPIO.HIGH or GPIO.input(PIN_ONE) == GPIO.HIGH:
+            index = index+1
+            if index > len(rooms)-1:
+                index = 0
+            print("[thread_navigation] asking room: ", rooms[index])
+            ui.SpeakCommand(str(rooms[index]))
+            time.sleep(0.3)
+            
+        if GPIO.input(PIN_DONE) == GPIO.HIGH:
+            if index < 0:
+                index = index+1
+            ui.SpeakCommand(" Room Selected, " + str(rooms[index]))
+            time.sleep(0.3)
+            break;
+    return str(rooms[index])
+            
 
 def GetButtonInput():
     thousands = 0
@@ -94,6 +116,7 @@ def GetButtonInput():
 def GetCameraInput(lock):
         ui.SpeakCommand("Determining! location, please! stay! steady!")
         camera_return = bsv.scan_barcode()
+        # camera_return = "Entrance"
         return camera_return
 
 def IsValid(room):
@@ -113,7 +136,7 @@ def ValidateRoom(room):
                         ui.SpeakCommand("Invalid room " + str(s) + ", please enter different room")
                 else: 
                        ui.SpeakCommand("Invalid room " + str(s) + ", please reconfirm room and enter")
-                s = GetButtonInput()
+                s = DemoButtonInput()
                 valid_room = IsValid(s)
                 
                 counter += 1
@@ -136,13 +159,14 @@ def GetCurrentLocation(lock):
                 s = camera_return
         else:
                 ui.SpeakCommand("Please enter current room")
-                s = ValidateRoom(GetButtonInput())
+                s = ValidateRoom(DemoButtonInput())
 
         roomNum = d.rooms[s][0]
         return roomNum
 
 def GetDestination():
-    e = ValidateRoom(GetButtonInput())
+    e = ValidateRoom(DemoButtonInput())
+#     e = "Exit"
     return e, d.rooms[e][0]
 
  
@@ -150,7 +174,6 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
     rerun_astar = False
     keepRunning = 0
     start_prog = False
-    ##camera_return = -1
     while keepRunning < 3:
         ## wait for button to start 
         '''# ------ Insert Code here ----- #'''
@@ -189,11 +212,12 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
 
                 ## send instruction
                 if required_direction != 0: ## turn required
-                        command.ui.GenerateTurnCommand()
+                        command = ui.GenerateTurnCommand(inst)
                         print(command)
                         ui.SpeakCommand(command)
 
-                        while required_direction != imu_direction.value:
+                        button_pressed = False
+                        while not button_pressed:
                                 ## obs detect 
                                 if obs.value:
                                         ui.SpeakCommand("Obstacle detected")
@@ -201,15 +225,21 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
                                         time.sleep(0.2)
 
                                 if GPIO.input(PIN_DONE) == GPIO.HIGH:
+                                        print("DETECTED BUTTON PRESS")
+                                        print("IMU direction ", imu_direction.value)
                                         if imu_direction.value == 0: ## we missed the turn
                                                 required_direction = 0
+                                                button_pressed = True
                                         else:
-                                                if imu_direction != required_direction:
+                                                if imu_direction.value != required_direction:
                                                         ui.SpeakCommand("Incorrect turn. Please turn opposite way and press done to confirm.")
+                                                        button_pressed = False
                                                 else:
-                                                        imu_direction = 0
+                                                        imu_direction.value = 0
                                                         required_direction = 0
-                        
+                                                        button_pressed = True
+                                        time.sleep(0.3)
+
                 command = ui.GenerateWalkCommand(inst)
                 print(command)
                 ui.SpeakCommand(command)
@@ -226,16 +256,11 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
                         print("[thread_navigation]: steps taken:", num_steps.value)
                         time.sleep(0.3)
                         ## Direction = true if moving in the true_direction
-                        print("[thread_navigation]: required_direction: ", required_direction)
-                        print("[thread_navigation]: imu_direction: ", imu_direction.value)
                         if required_direction == imu_direction.value:
                                 time.sleep(1)
                                 direction = True
                                 imu_direction.value = 0
                                 required_direction = 0
-                        else:
-                                ui.SpeakCommand("You turned the wrong direction! Please turn back.")
-                                ## assume they turned back and continue
 
                         '''# ------ End here ----- #'''
                 ## Turned the wrong way?
@@ -263,7 +288,7 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
         ##'''# ------ End here ----- #'''
         else:
                 rerun_astar = True
-                start_prog = True
-                ui.SpeakCommand("Incorrect Destination, rerouting")
+                start_prog = False
+                ui.SpeakCommand("Incorrect Destination, restarting program")
         
         keepRunning += 1

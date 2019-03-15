@@ -16,6 +16,7 @@ def GenerateTurnCommand(command):
         cmd += "right "
     
     cmd += "and press the done button to confirm."
+    return cmd
         
 
 

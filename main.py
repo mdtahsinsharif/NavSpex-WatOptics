@@ -6,7 +6,7 @@ import importlib
 import sys
 import os
 import thread_navigation
-import thread_obstacle
+# import thread_obstacle
 import time
 import Software.WatOptics_firmware.hardware_testing.IMU.wiringPi.LSM9DS1_RaspberryPi_Library.example.LSM9DS1_Basic_I2C as imu_module
 import Software.WatOptics_firmware.hardware_testing.Sonar.rangeFind as sonar_thread
@@ -23,9 +23,8 @@ if __name__ == "__main__":
     procs = []
     procs.append(Process(target=thread_navigation.thread_navigate, args=(v,lock, triangleIds, imu_counter, imu_direction, obstacle_detected)))
     procs.append(Process(target=imu_module.imu_step_counter, args=(imu_counter,imu_direction)))
-    #procs.append(Process(target=sonar_thread.sonar_detect, args=(obstacle_value,obstacle_detected)))
+    procs.append(Process(target=sonar_thread.sonar_detect, args=(obstacle_value,obstacle_detected)))
 
     for p in procs: p.start()
     for p in procs: p.join()
-
-
+    
