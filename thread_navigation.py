@@ -115,6 +115,7 @@ def GetButtonInput():
     return str(roomNumber)
 
 def GetCameraInput(lock):
+        
         ui.SpeakCommand("Determining! location, please! stay! steady!")
         camera_return = bsv.scan_barcode()
         # camera_return = "Entrance"
@@ -171,7 +172,7 @@ def GetDestination():
     return e, d.rooms[e][0]
 
  
-def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
+def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs, camera_bool):
     rerun_astar = False
     keepRunning = 0
     start_prog = False
@@ -188,7 +189,9 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
 
         
         ## Get current location
+        camera_bool.value = 1
         start = GetCurrentLocation(lock)
+        camera_bool.value = 0
 
         ## Get destination
         if rerun_astar == False:
@@ -223,7 +226,7 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
                                 if obs.value:
                                         ui.SpeakCommand("Obstacle detected")
                                         obs.value = 0
-                                        time.sleep(0.2)
+                                        time.sleep(0.1)
 
                                 if GPIO.input(PIN_DONE) == GPIO.HIGH:
                                         print("DETECTED BUTTON PRESS")
@@ -279,8 +282,9 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
         ## Start camera
         '''# ------ Insert Code here ----- #'''
         ## start camera and detect whether destination reached
-        
+        camera_bool.value = 1
         camera_input = GetCameraInput(lock)
+        camera_bool.value = 0
         #camera_input = camera_return
         print("destination camera: ", str(camera_input), "destination end ", str(end), "destination e ", str(e))
         if str(camera_input) == str(e):

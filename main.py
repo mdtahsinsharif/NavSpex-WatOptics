@@ -19,12 +19,13 @@ if __name__ == "__main__":
     obstacle_detected = Value('i', 0)
     imu_direction = Value('i', 0)
     obstacle_value = Value('i',9999)
+    camera_bool = Value('i',0)
     lock = Lock()
     procs = []
-    procs.append(Process(target=thread_navigation.thread_navigate, args=(v,lock, triangleIds, imu_counter, imu_direction, obstacle_detected)))
+    procs.append(Process(target=thread_navigation.thread_navigate, args=(v,lock, triangleIds, imu_counter, imu_direction, obstacle_detected, camera_bool)))
     procs.append(Process(target=imu_module.imu_step_counter, args=(imu_counter,imu_direction)))
-    procs.append(Process(target=sonar_thread.sonar_detect, args=(obstacle_value,obstacle_detected)))
+    procs.append(Process(target=sonar_thread.sonar_detect, args=(obstacle_value,obstacle_detected, camera_bool)))
 
     for p in procs: p.start()
     for p in procs: p.join()
-    
+    #thread_navigation.DemoButtonInput();
