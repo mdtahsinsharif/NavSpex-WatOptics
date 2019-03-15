@@ -316,9 +316,10 @@ def GetInstructions(path, sc): ## sc = stride scale
     currentp = path[1]
     while i in range(len(path) - 1):
         nextp = path[i+1]
-
-        direction = getTurn(np.array(prevp), np.array(currentp), np.array(nextp))
-        instructions.append((direction, getNumSteps(currentp, nextp, sc)))
+        if currentp != nextp: ## work around for repeated coords
+            direction = getTurn(np.array(prevp), np.array(currentp), np.array(nextp))
+            instructions.append((direction, getNumSteps(currentp, nextp, sc)))
+        
         currentp = nextp
         i +=1
     
