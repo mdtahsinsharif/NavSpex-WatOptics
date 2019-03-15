@@ -26,7 +26,7 @@ def DemoButtonInput():
     rooms = []
     rooms.append(4012)
     index = -1
-    ui.SpeakCommand("Press buttons to select your room and then, press done ")
+    ui.SpeakCommand("Press buttons to select your room and then, press ok ")
     while True:
         if GPIO.input(PIN_THOUSAND) == GPIO.HIGH or GPIO.input(PIN_HUNDRED) == GPIO.HIGH or GPIO.input(PIN_TEN) == GPIO.HIGH or GPIO.input(PIN_ONE) == GPIO.HIGH:
             index = index+1
@@ -177,7 +177,7 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
     while keepRunning < 3:
         ## wait for button to start 
         '''# ------ Insert Code here ----- #'''
-        ui.SpeakCommand("Please press any button to begin")
+        ui.SpeakCommand("Please press OK button to begin")
         
         while start_prog == False:
         # might need to add delay here and in room input for SONAR
@@ -232,7 +232,7 @@ def thread_navigate(shared_val,lock, tIds, num_steps, imu_direction, obs):
                                                 button_pressed = True
                                         else:
                                                 if imu_direction.value != required_direction:
-                                                        ui.SpeakCommand("Incorrect turn. Please turn opposite way and press done to confirm.")
+                                                        ui.SpeakCommand("Incorrect turn. Please turn opposite way and press ok to confirm.")
                                                         button_pressed = False
                                                 else:
                                                         imu_direction.value = 0
