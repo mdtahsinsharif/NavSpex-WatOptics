@@ -25,6 +25,7 @@ GPIO.setup(PIN_DONE, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 24 to be an 
 def DemoButtonInput():
     rooms = []
     rooms.append(4012)
+    rooms.append(4013)
     index = -1
     ui.SpeakCommand("Press buttons to select your room and then, press ok ")
     while True:

@@ -6,7 +6,8 @@ strideWomen = 0.671 ## meters per female stride
 rooms = {
 	"4020": [(420, 276)],
 	# "Room1": [(125, 276)],
-	"Room2": [(349, 874)],
+	# ROOM2 Below
+	"4013": [(349, 874)],
 	"4012": [(741, 586)]
 }
 
